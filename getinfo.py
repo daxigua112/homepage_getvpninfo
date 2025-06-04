@@ -3,15 +3,15 @@ import json
 import os
 import time
 
-# 多个订阅链接：键是自定义机场名，值是订阅地址
-SUBSCRIBE_LIST = {
-    "xxcloud": "",
-    "xxxcloud": ""
-    # 可继续添加
-}
+# 机场信息输出目录
+OUTPUT_DIR = ""
+CONFIG_FILE = "config.json"  # 配置文件路径
 
-# 输出目录
-OUTPUT_DIR = "/opt/1panel/apps/openresty/openresty/www/sites/"
+def load_subscribe_list():
+    if not os.path.exists(CONFIG_FILE):
+        raise FileNotFoundError(f"配置文件 {CONFIG_FILE} 不存在")
+    with open(CONFIG_FILE, "r") as f:
+        return json.load(f)
 
 def parse_userinfo_header(header_value):
     result = {}
@@ -30,7 +30,13 @@ def format_gb(byte_value):
     return f"{byte_value / 1073741824:.2f} GB"
 
 def main():
-    for name, url in SUBSCRIBE_LIST.items():
+    try:
+        subscribe_list = load_subscribe_list()
+    except Exception as e:
+        print(f"读取配置文件失败: {e}")
+        return
+
+    for name, url in subscribe_list.items():
         try:
             print(f"获取 {name}...")
             response = requests.get(url, verify=False)
